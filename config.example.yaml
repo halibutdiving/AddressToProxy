@@ -1,0 +1,17 @@
+llm:
+  base_url: "https://example-llm-provider.invalid/v1"
+  api_key: "${ADDRESS_TO_PROXY_LLM_API_KEY}"
+  model: "fast-model-id"
+
+platforms:
+  1024proxy:
+    token: "${ADDRESS_TO_PROXY_1024_TOKEN}"
+    proxy_host: "us.1024proxy.io:3000"
+    account_id: "acct_example"
+    password: "${ADDRESS_TO_PROXY_1024_PASSWORD}"
+    ttl_minutes: 10
+
+validation:
+  mode: "strict"
+  max_retries: 5
+  distance_km: 100
