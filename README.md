@@ -33,8 +33,57 @@ The 1024proxy token is used only for platform dictionary API calls. The account 
 
 ## Development
 
+Create a local virtual environment and install the package in editable mode:
+
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
+```
+
+Run the test suite:
+
+```bash
 .venv/bin/python -m pytest -q
 ```
+
+Verify the CLI entrypoint:
+
+```bash
+.venv/bin/address-to-proxy --help
+.venv/bin/address-to-proxy resolve --help
+```
+
+Create a local runtime config:
+
+```bash
+cp config.example.yaml config.yaml
+```
+
+Then edit `config.yaml` for non-secret values such as `llm.base_url`, `llm.model`, `platforms.1024proxy.account_id`, `platforms.1024proxy.proxy_host`, `platforms.1024proxy.ttl_minutes`, and `validation.*`. Keep secrets in environment variables:
+
+```bash
+export ADDRESS_TO_PROXY_LLM_API_KEY="your-llm-api-key"
+export ADDRESS_TO_PROXY_1024_TOKEN="your-1024proxy-api-token"
+export ADDRESS_TO_PROXY_1024_PASSWORD="your-fake-proxy-password"
+```
+
+Run a real resolve request:
+
+```bash
+.venv/bin/address-to-proxy resolve \
+  "123 Example St,Example City,North Carolina,28214, US" \
+  --config config.yaml \
+  --platform 1024proxy \
+  --output json
+```
+
+For development without making a real proxy validation request, set:
+
+```yaml
+validation:
+  mode: "off"
+  max_retries: 1
+  distance_km: 100
+```
+
+Use `strict` when you want the tool to verify that `ipinfo.io/json` returns the same country, state, and city requested in the generated proxy username.
