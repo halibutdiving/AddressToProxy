@@ -99,7 +99,16 @@ class LlmAddressParser:
         except httpx.HTTPError as exc:
             raise LlmParseError(f"LLM request failed: {exc}") from exc
 
-        return response.json()
+        try:
+            payload = response.json()
+        except json.JSONDecodeError as exc:
+            preview = response.text[:200].strip().replace("\n", " ")
+            raise LlmParseError(
+                f"LLM HTTP response was not JSON. Response preview: {preview}"
+            ) from exc
+        if not isinstance(payload, dict):
+            raise LlmParseError("LLM HTTP response JSON must be an object")
+        return payload
 
 
 def _extract_content(payload: dict[str, Any]) -> str:

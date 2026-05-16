@@ -71,6 +71,16 @@ def test_parse_raises_for_invalid_json_content():
 
 
 @respx.mock
+def test_parse_raises_llm_parse_error_when_http_response_is_not_json():
+    respx.post("https://llm.example/v1/chat/completions").mock(
+        return_value=Response(200, text="<html>not json</html>")
+    )
+
+    with pytest.raises(LlmParseError, match="response was not JSON"):
+        _parser().parse("bad input")
+
+
+@respx.mock
 def test_parse_raises_for_missing_required_fields():
     respx.post("https://llm.example/v1/chat/completions").mock(
         return_value=Response(
