@@ -39,6 +39,21 @@ Run:
 ./run.py 123 Example St,Example City,North Carolina,28214, US
 ```
 
+Use from Python after installing the package in your venv:
+
+```python
+from address_to_proxy import resolve_address
+
+result = resolve_address(
+    "123 Example St,Example City,North Carolina,28214, US",
+    config_path="config.yaml",
+)
+
+print(result.proxy_host)
+print(result.username)
+print(result.password)
+```
+
 If you installed the package entrypoint, this command is equivalent:
 
 ```bash
