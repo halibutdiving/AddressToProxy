@@ -12,15 +12,37 @@ First version scope:
 
 ## Usage
 
+Install dependencies:
+
 ```bash
-address-to-proxy resolve "123 Example St,Example City,North Carolina,28214, US" \
+./install.sh
+```
+
+Create your local config once:
+
+```bash
+cp config.example.yaml config.yaml
+```
+
+Edit `config.yaml` and set the required environment variables:
+
+```bash
+export ADDRESS_TO_PROXY_LLM_API_KEY="..."
+export ADDRESS_TO_PROXY_1024_TOKEN="..."
+export ADDRESS_TO_PROXY_1024_PASSWORD="..."
+```
+
+Run:
+
+```bash
+./run.py resolve "123 Example St,Example City,North Carolina,28214, US" \
   --output json
 ```
 
-If you are running from a checkout and do not want to install the package entrypoint, use the root script:
+If you installed the package entrypoint, this command is equivalent:
 
 ```bash
-python run.py resolve "123 Example St,Example City,North Carolina,28214, US" \
+address-to-proxy resolve "123 Example St,Example City,North Carolina,28214, US" \
   --output json
 ```
 
@@ -41,19 +63,19 @@ The 1024proxy token is used only for platform dictionary API calls. The account 
 
 ## Development
 
-Create a local virtual environment and install the package in editable mode:
+For normal local use, run the installer:
+
+```bash
+./install.sh
+```
+
+It creates `.venv`, upgrades pip, and installs this project in editable mode.
+
+For manual setup:
 
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
-```
-
-For a no-entrypoint workflow, install only the dependencies and run `run.py` directly:
-
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install httpx pydantic PyYAML typer
-.venv/bin/python run.py resolve --help
 ```
 
 Run the test suite:
