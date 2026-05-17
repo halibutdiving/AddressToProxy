@@ -42,6 +42,54 @@ class FakeNearestCityParser(FakeParser):
         return City(name="Charlotte")
 
 
+class FakePlatformCountryParser:
+    def __init__(self) -> None:
+        self.country_choices = 0
+
+    def parse(self, address: str) -> ParsedAddress:
+        return ParsedAddress(
+            country="United States",
+            state="Illinois",
+            city="Rockford",
+            postal_code="61104",
+            street="456 Sample Ave",
+            confidence=0.95,
+        )
+
+    def choose_country(self, parsed: ParsedAddress, countries: list[Country]) -> Country:
+        self.country_choices += 1
+        assert parsed.country == "United States"
+        assert [country.code for country in countries] == ["US"]
+        return countries[0]
+
+
+class FakePlatformStateParser:
+    def __init__(self) -> None:
+        self.state_choices = 0
+
+    def parse(self, address: str) -> ParsedAddress:
+        return ParsedAddress(
+            country="US",
+            state="伊利诺伊州",
+            city="Rockford",
+            postal_code="61104",
+            street="456 Sample Ave",
+            confidence=0.95,
+        )
+
+    def choose_state(
+        self,
+        parsed: ParsedAddress,
+        country: Country,
+        states: list[State],
+    ) -> State:
+        self.state_choices += 1
+        assert parsed.state == "伊利诺伊州"
+        assert country.code == "US"
+        assert [state.name for state in states] == ["Illinois"]
+        return states[0]
+
+
 class FakeAdapter:
     proxy_host = "us.1024proxy.io:3000"
     password = "fake-proxy-password"
@@ -69,6 +117,22 @@ class FakeAdapter:
     def generate_username(self, location: SelectedLocation) -> str:
         self.generated += 1
         return f"user-{self.generated}-{location.city}"
+
+
+class FakeIllinoisAdapter(FakeAdapter):
+    def fetch_countries(self):
+        return [
+            Country(
+                code="US",
+                name="美国",
+                states=[State(name="Illinois")],
+            )
+        ]
+
+    def fetch_cities(self, country: str, state: str):
+        assert country == "US"
+        assert state == "Illinois"
+        return [City(name="Rockford")]
 
 
 class SequenceValidator:
@@ -174,6 +238,48 @@ def test_resolver_uses_nearest_city_selector_when_city_is_not_supported():
 
     assert result.selected_location.city == "Charlotte"
     assert result.username == "user-1-Charlotte"
+
+
+def test_resolver_uses_platform_country_selector_when_country_is_not_directly_supported():
+    parser = FakePlatformCountryParser()
+    adapter = FakeIllinoisAdapter()
+    resolver = AddressToProxyResolver(
+        parser=parser,
+        adapters={"1024proxy": adapter},
+        validator=SequenceValidator([_attempt(True, "matched")]),
+        validation_config=ValidationConfig(mode="strict", max_retries=3),
+    )
+
+    result = resolver.resolve(
+        "456 Sample Ave,Rockford,Illinois,61104, US",
+        platform="1024proxy",
+    )
+
+    assert parser.country_choices == 1
+    assert result.selected_location.country == "US"
+    assert result.selected_location.state == "Illinois"
+    assert result.selected_location.city == "Rockford"
+
+
+def test_resolver_uses_platform_state_selector_when_state_is_not_directly_supported():
+    parser = FakePlatformStateParser()
+    adapter = FakeIllinoisAdapter()
+    resolver = AddressToProxyResolver(
+        parser=parser,
+        adapters={"1024proxy": adapter},
+        validator=SequenceValidator([_attempt(True, "matched")]),
+        validation_config=ValidationConfig(mode="strict", max_retries=3),
+    )
+
+    result = resolver.resolve(
+        "456 Sample Ave,Rockford,Illinois,61104, US",
+        platform="1024proxy",
+    )
+
+    assert parser.state_choices == 1
+    assert result.selected_location.country == "US"
+    assert result.selected_location.state == "Illinois"
+    assert result.selected_location.city == "Rockford"
 
 
 def test_resolver_raises_when_city_is_not_supported_and_no_nearest_selector_exists():

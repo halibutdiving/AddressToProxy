@@ -6,6 +6,7 @@ First version scope:
 
 - CLI entrypoint: `address-to-proxy resolve`.
 - LLM-assisted address parsing through a configured OpenAI-compatible endpoint.
+- LLM-assisted platform dictionary matching when direct country/state matching fails.
 - 1024proxy country/state/city dictionary lookup.
 - 1024proxy username generation.
 - Configurable proxy location validation through `ipinfo.io/json`.
@@ -67,6 +68,8 @@ export ADDRESS_TO_PROXY_1024_PASSWORD="..."
 ```
 
 The 1024proxy token is used only for platform dictionary API calls. The account ID and password are used only for connecting to the generated proxy.
+
+Address parsing runs through the configured LLM first. If the parsed country or state does not directly match the selected platform dictionary, the tool asks the same LLM to choose from the platform-supported candidates and then validates that choice locally before generating the proxy username.
 
 ## Development
 

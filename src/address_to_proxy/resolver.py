@@ -74,8 +74,22 @@ class AddressToProxyResolver:
         parsed: ParsedAddress,
     ) -> SelectedLocation:
         countries = adapter.fetch_countries()
-        country = match_country(parsed.country, countries)
-        state = match_state(parsed.state, country.states)
+        try:
+            country = match_country(parsed.country, countries)
+        except LocationMatchError:
+            selector = getattr(self.parser, "choose_country", None)
+            if not callable(selector):
+                raise
+            country = selector(parsed, countries)
+
+        try:
+            state = match_state(parsed.state, country.states)
+        except LocationMatchError:
+            selector = getattr(self.parser, "choose_state", None)
+            if not callable(selector):
+                raise
+            state = selector(parsed, country, country.states)
+
         cities = adapter.fetch_cities(country.code, state.name)
         try:
             city = match_city(parsed.city, cities)

@@ -6,8 +6,8 @@ from pydantic import ValidationError as PydanticValidationError
 
 from address_to_proxy.config import LlmConfig
 from address_to_proxy.errors import LlmParseError
-from address_to_proxy.matching import match_city
-from address_to_proxy.models import City, ParsedAddress
+from address_to_proxy.matching import match_city, match_country, match_state
+from address_to_proxy.models import City, Country, ParsedAddress, State
 
 
 class LlmAddressParser:
@@ -79,6 +79,89 @@ class LlmAddressParser:
         if not isinstance(city_name, str):
             raise LlmParseError("LLM nearest-city response must include a city string")
         return match_city(city_name, cities)
+
+    def choose_country(self, parsed: ParsedAddress, countries: list[Country]) -> Country:
+        payload = self._chat(
+            [
+                {
+                    "role": "system",
+                    "content": (
+                        "Choose the supported proxy country that best matches the "
+                        "parsed address. Return strict JSON with exactly one key: "
+                        "country_code. The country_code value must be copied from "
+                        "the supported country list."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": json.dumps(
+                        {
+                            "parsed_address": parsed.model_dump(exclude_none=True),
+                            "supported_countries": [
+                                country.model_dump(
+                                    include={"code", "name"},
+                                    exclude_none=True,
+                                )
+                                for country in countries
+                            ],
+                        },
+                        ensure_ascii=False,
+                    ),
+                },
+            ]
+        )
+        content = _extract_content(payload)
+        try:
+            data = json.loads(_strip_code_fence(content))
+        except json.JSONDecodeError as exc:
+            raise LlmParseError("LLM country response content was not valid JSON") from exc
+        country_code = data.get("country_code")
+        if not isinstance(country_code, str):
+            raise LlmParseError("LLM country response must include a country_code string")
+        return match_country(country_code, countries)
+
+    def choose_state(
+        self,
+        parsed: ParsedAddress,
+        country: Country,
+        states: list[State],
+    ) -> State:
+        payload = self._chat(
+            [
+                {
+                    "role": "system",
+                    "content": (
+                        "Choose the supported proxy state or region that best matches "
+                        "the parsed address for the selected country. Return strict "
+                        "JSON with exactly one key: state. The state value must be "
+                        "copied from the supported state list."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": json.dumps(
+                        {
+                            "parsed_address": parsed.model_dump(exclude_none=True),
+                            "country": country.model_dump(
+                                include={"code", "name"},
+                                exclude_none=True,
+                            ),
+                            "supported_states": [state.name for state in states],
+                        },
+                        ensure_ascii=False,
+                    ),
+                },
+            ]
+        )
+        content = _extract_content(payload)
+        try:
+            data = json.loads(_strip_code_fence(content))
+        except json.JSONDecodeError as exc:
+            raise LlmParseError("LLM state response content was not valid JSON") from exc
+        state_name = data.get("state")
+        if not isinstance(state_name, str):
+            raise LlmParseError("LLM state response must include a state string")
+        return match_state(state_name, states)
 
     def _chat(self, messages: list[dict[str, str]]) -> dict[str, Any]:
         url = self.config.base_url.rstrip("/") + "/chat/completions"
