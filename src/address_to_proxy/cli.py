@@ -1,6 +1,7 @@
 import json
 import shlex
 from pathlib import Path
+from typing import Annotated
 from typing import Literal
 
 import typer
@@ -23,7 +24,10 @@ def root() -> None:
 
 @app.command()
 def resolve(
-    address: str,
+    address: Annotated[
+        list[str],
+        typer.Argument(help="Address tokens. Multiple tokens are joined with spaces."),
+    ],
     config: Path = typer.Option(
         Path("config.yaml"),
         "--config",
@@ -44,10 +48,13 @@ def resolve(
     ),
 ) -> None:
     try:
+        address_text = " ".join(address).strip()
+        if not address_text:
+            raise ConfigError("Address is required")
         app_config = load_config(config)
         resolver = build_resolver(app_config)
         selected_platform = platform or default_platform(app_config)
-        result = resolver.resolve(address, platform=selected_platform)
+        result = resolver.resolve(address_text, platform=selected_platform)
     except AddressToProxyError as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc

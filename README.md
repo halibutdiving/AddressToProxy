@@ -35,13 +35,13 @@ export ADDRESS_TO_PROXY_1024_PASSWORD="..."
 Run:
 
 ```bash
-./run.py "123 Example St,Example City,North Carolina,28214, US"
+./run.py 123 Example St,Example City,North Carolina,28214, US
 ```
 
 If you installed the package entrypoint, this command is equivalent:
 
 ```bash
-address-to-proxy resolve "123 Example St,Example City,North Carolina,28214, US"
+address-to-proxy resolve 123 Example St,Example City,North Carolina,28214, US
 ```
 
 By default, the CLI reads `config.yaml` from the current working directory. Use `--config path/to/config.yaml` only when you want to load a different file.
@@ -50,8 +50,8 @@ It also selects the first supported proxy platform found in `platforms`; use `--
 Output defaults to JSON. Other formats are available:
 
 ```bash
-./run.py "123 Example St,Example City,North Carolina,28214, US" --output text
-./run.py "123 Example St,Example City,North Carolina,28214, US" --output curl
+./run.py 123 Example St,Example City,North Carolina,28214, US --output text
+./run.py 123 Example St,Example City,North Carolina,28214, US --output curl
 ```
 
 `text` prints `proxy_host`, `username`, `password`, and `validated` as simple key/value lines. `curl` prints a ready-to-run `curl -x ... -U ... https://ipinfo.io/json` command.
@@ -116,21 +116,21 @@ Run a real resolve request:
 
 ```bash
 .venv/bin/address-to-proxy resolve \
-  "123 Example St,Example City,North Carolina,28214, US"
+  123 Example St,Example City,North Carolina,28214, US
 ```
 
 Equivalent direct-script command:
 
 ```bash
 .venv/bin/python run.py \
-  "123 Example St,Example City,North Carolina,28214, US"
+  123 Example St,Example City,North Carolina,28214, US
 ```
 
 To use a config file outside the current directory:
 
 ```bash
 .venv/bin/address-to-proxy resolve \
-  "123 Example St,Example City,North Carolina,28214, US" \
+  123 Example St,Example City,North Carolina,28214, US \
   --config path/to/config.yaml \
   --platform 1024proxy
 ```
