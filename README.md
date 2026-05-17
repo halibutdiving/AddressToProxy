@@ -17,6 +17,13 @@ address-to-proxy resolve "123 Example St,Example City,North Carolina,28214, US" 
   --output json
 ```
 
+If you are running from a checkout and do not want to install the package entrypoint, use the root script:
+
+```bash
+python run.py resolve "123 Example St,Example City,North Carolina,28214, US" \
+  --output json
+```
+
 By default, the CLI reads `config.yaml` from the current working directory. Use `--config path/to/config.yaml` only when you want to load a different file.
 It also selects the first supported proxy platform found in `platforms`; use `--platform 1024proxy` only when you want to override that selection.
 
@@ -39,6 +46,14 @@ Create a local virtual environment and install the package in editable mode:
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
+```
+
+For a no-entrypoint workflow, install only the dependencies and run `run.py` directly:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install httpx pydantic PyYAML typer
+.venv/bin/python run.py resolve --help
 ```
 
 Run the test suite:
@@ -72,6 +87,14 @@ Run a real resolve request:
 
 ```bash
 .venv/bin/address-to-proxy resolve \
+  "123 Example St,Example City,North Carolina,28214, US" \
+  --output json
+```
+
+Equivalent direct-script command:
+
+```bash
+.venv/bin/python run.py resolve \
   "123 Example St,Example City,North Carolina,28214, US" \
   --output json
 ```
