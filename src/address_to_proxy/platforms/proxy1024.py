@@ -104,17 +104,33 @@ def _country_from_entry(entry: Any) -> Country:
 
     code = _first_present(entry, "country", "code", "country_code", "value")
     name = _first_present(entry, "country_name", "name", "label", default=code)
-    states_raw = _first_present(entry, "state", "states", "state_list", "children", default=[])
-    states = [_state_from_entry(item) for item in _as_list(states_raw)]
+    states_raw = _first_present(
+        entry,
+        "state",
+        "states",
+        "States",
+        "state_list",
+        "children",
+        default=[],
+    )
+    states = []
+    for state_entry in _as_list(states_raw):
+        state = _state_from_entry(state_entry)
+        if state is not None:
+            states.append(state)
     return Country(code=str(code), name=str(name) if name else None, states=states)
 
 
-def _state_from_entry(entry: Any) -> State:
+def _state_from_entry(entry: Any) -> State | None:
     if isinstance(entry, str):
+        if not entry.strip():
+            return None
         return State(name=entry)
     if not isinstance(entry, dict):
         raise PlatformError("Invalid state entry in 1024proxy response")
-    name = _first_present(entry, "state", "state_name", "name", "label", "value")
+    name = _optional_present(entry, "state", "state_name", "name", "label", "value")
+    if not isinstance(name, str) or not name.strip():
+        return None
     return State(name=str(name))
 
 

@@ -51,6 +51,54 @@ def test_fetch_countries_posts_expected_form_and_normalizes_states():
 
 
 @respx.mock
+def test_fetch_countries_normalizes_real_1024proxy_states_key():
+    respx.post("https://api.1024proxy.com/v3/country").mock(
+        return_value=Response(
+            200,
+            json={
+                "code": 0,
+                "data": [
+                    {
+                        "code": "US",
+                        "name": "美国",
+                        "States": [{"state": "North Carolina"}],
+                    }
+                ],
+            },
+        )
+    )
+
+    countries = Proxy1024Adapter(_config()).fetch_countries()
+
+    assert countries == [
+        Country(code="US", name="美国", states=[{"name": "North Carolina"}])
+    ]
+
+
+@respx.mock
+def test_fetch_countries_skips_empty_state_entries_from_real_payload():
+    respx.post("https://api.1024proxy.com/v3/country").mock(
+        return_value=Response(
+            200,
+            json={
+                "code": 0,
+                "data": [
+                    {
+                        "code": "VG",
+                        "name": "英属维尔京群岛",
+                        "States": [{"state": ""}],
+                    }
+                ],
+            },
+        )
+    )
+
+    countries = Proxy1024Adapter(_config()).fetch_countries()
+
+    assert countries == [Country(code="VG", name="英属维尔京群岛", states=[])]
+
+
+@respx.mock
 def test_fetch_cities_posts_expected_form_and_normalizes_city_names():
     route = respx.post("https://api.1024proxy.com/v2/city").mock(
         return_value=Response(
