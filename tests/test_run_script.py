@@ -73,3 +73,18 @@ def test_executable_run_script_help_uses_project_venv():
 
     assert result.returncode == 0
     assert "--config" in result.stdout
+
+
+def test_run_script_accepts_address_without_resolve_subcommand():
+    script = ROOT / "run.py"
+
+    result = subprocess.run(
+        [str(script), "123 Example St,Example City,North Carolina,28214, US", "--help"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    assert "Usage: run.py resolve" in result.stdout
+    assert "--output" in result.stdout

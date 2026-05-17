@@ -35,7 +35,7 @@ export ADDRESS_TO_PROXY_1024_PASSWORD="..."
 Run:
 
 ```bash
-./run.py resolve "123 Example St,Example City,North Carolina,28214, US"
+./run.py "123 Example St,Example City,North Carolina,28214, US"
 ```
 
 If you installed the package entrypoint, this command is equivalent:
@@ -50,8 +50,8 @@ It also selects the first supported proxy platform found in `platforms`; use `--
 Output defaults to JSON. Other formats are available:
 
 ```bash
-./run.py resolve "123 Example St,Example City,North Carolina,28214, US" --output text
-./run.py resolve "123 Example St,Example City,North Carolina,28214, US" --output curl
+./run.py "123 Example St,Example City,North Carolina,28214, US" --output text
+./run.py "123 Example St,Example City,North Carolina,28214, US" --output curl
 ```
 
 `text` prints `proxy_host`, `username`, `password`, and `validated` as simple key/value lines. `curl` prints a ready-to-run `curl -x ... -U ... https://ipinfo.io/json` command.
@@ -122,7 +122,7 @@ Run a real resolve request:
 Equivalent direct-script command:
 
 ```bash
-.venv/bin/python run.py resolve \
+.venv/bin/python run.py \
   "123 Example St,Example City,North Carolina,28214, US"
 ```
 
