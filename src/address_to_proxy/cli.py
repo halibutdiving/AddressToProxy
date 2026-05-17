@@ -22,7 +22,12 @@ def root() -> None:
 @app.command()
 def resolve(
     address: str,
-    config: Path = typer.Option(..., "--config", "-c", help="Path to YAML config file."),
+    config: Path = typer.Option(
+        Path("config.yaml"),
+        "--config",
+        "-c",
+        help="Path to YAML config file.",
+    ),
     platform: str = typer.Option("1024proxy", "--platform", "-p", help="Proxy platform name."),
     output: Literal["json"] = typer.Option("json", "--output", "-o", help="Output format."),
 ) -> None:

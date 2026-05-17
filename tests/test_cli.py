@@ -95,6 +95,44 @@ validation:
     assert payload["validation"]["attempts"] == 1
 
 
+def test_resolve_command_uses_current_directory_config_by_default(monkeypatch, tmp_path):
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text(
+        """
+llm:
+  base_url: "https://llm.example/v1"
+  api_key: "fake-llm-key"
+  model: "fast-model"
+platforms:
+  1024proxy:
+    token: "fake-platform-token"
+    proxy_host: "us.1024proxy.io:3000"
+    account_id: "acct_example"
+    password: "fake-proxy-password"
+    ttl_minutes: 10
+validation:
+  mode: "strict"
+  max_retries: 5
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(cli, "build_resolver", lambda config: FakeResolver(config))
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "resolve",
+            "123 Example St,Example City,North Carolina,28214, US",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["proxy_host"] == "us.1024proxy.io:3000"
+    assert payload["validated"] is True
+
+
 def test_missing_config_exits_non_zero():
     result = CliRunner().invoke(
         cli.app,

@@ -14,10 +14,11 @@ First version scope:
 
 ```bash
 address-to-proxy resolve "123 Example St,Example City,North Carolina,28214, US" \
-  --config config.yaml \
   --platform 1024proxy \
   --output json
 ```
+
+By default, the CLI reads `config.yaml` from the current working directory. Use `--config path/to/config.yaml` only when you want to load a different file.
 
 ## Configuration
 
@@ -72,7 +73,16 @@ Run a real resolve request:
 ```bash
 .venv/bin/address-to-proxy resolve \
   "123 Example St,Example City,North Carolina,28214, US" \
-  --config config.yaml \
+  --platform 1024proxy \
+  --output json
+```
+
+To use a config file outside the current directory:
+
+```bash
+.venv/bin/address-to-proxy resolve \
+  "123 Example St,Example City,North Carolina,28214, US" \
+  --config path/to/config.yaml \
   --platform 1024proxy \
   --output json
 ```
