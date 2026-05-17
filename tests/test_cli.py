@@ -103,6 +103,93 @@ validation:
     assert payload["validation"]["attempts"] == 1
 
 
+def test_resolve_command_prints_text(monkeypatch, tmp_path):
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text(
+        """
+llm:
+  base_url: "https://llm.example/v1"
+  api_key: "fake-llm-key"
+  model: "fast-model"
+platforms:
+  1024proxy:
+    token: "fake-platform-token"
+    proxy_host: "us.1024proxy.io:3000"
+    account_id: "acct_example"
+    password: "fake-proxy-password"
+    ttl_minutes: 10
+validation:
+  mode: "strict"
+  max_retries: 5
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cli, "build_resolver", lambda config: FakeResolver(config))
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "resolve",
+            "123 Example St,Example City,North Carolina,28214, US",
+            "--config",
+            str(config_file),
+            "--output",
+            "text",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "proxy_host=us.1024proxy.io:3000\n"
+        "username=acct_example-region-US-st-North Carolina-city-Charlotte-sid-W4xtvPvQ-t-10\n"
+        "password=fake-proxy-password\n"
+        "validated=true\n"
+    )
+
+
+def test_resolve_command_prints_curl(monkeypatch, tmp_path):
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text(
+        """
+llm:
+  base_url: "https://llm.example/v1"
+  api_key: "fake-llm-key"
+  model: "fast-model"
+platforms:
+  1024proxy:
+    token: "fake-platform-token"
+    proxy_host: "us.1024proxy.io:3000"
+    account_id: "acct_example"
+    password: "fake-proxy-password"
+    ttl_minutes: 10
+validation:
+  mode: "strict"
+  max_retries: 5
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cli, "build_resolver", lambda config: FakeResolver(config))
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "resolve",
+            "123 Example St,Example City,North Carolina,28214, US",
+            "--config",
+            str(config_file),
+            "--output",
+            "curl",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "curl -x us.1024proxy.io:3000 "
+        "-U 'acct_example-region-US-st-North Carolina-city-Charlotte-sid-W4xtvPvQ-t-10:fake-proxy-password' "
+        "https://ipinfo.io/json\n"
+    )
+
+
 def test_resolve_command_selects_first_supported_configured_platform(monkeypatch, tmp_path):
     RecordingResolver.seen_platforms = []
     config_file = tmp_path / "config.yaml"

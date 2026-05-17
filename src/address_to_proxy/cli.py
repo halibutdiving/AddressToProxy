@@ -1,4 +1,5 @@
 import json
+import shlex
 from pathlib import Path
 from typing import Literal
 
@@ -7,6 +8,7 @@ import typer
 from address_to_proxy.config import AppConfig, load_config
 from address_to_proxy.errors import AddressToProxyError, ConfigError
 from address_to_proxy.llm import LlmAddressParser
+from address_to_proxy.models import ResolveResult
 from address_to_proxy.platforms.proxy1024 import Proxy1024Adapter
 from address_to_proxy.resolver import AddressToProxyResolver
 from address_to_proxy.validation import ProxyValidator
@@ -34,7 +36,12 @@ def resolve(
         "-p",
         help="Proxy platform name. Defaults to the first supported platform in config.",
     ),
-    output: Literal["json"] = typer.Option("json", "--output", "-o", help="Output format."),
+    output: Literal["json", "text", "curl"] = typer.Option(
+        "json",
+        "--output",
+        "-o",
+        help="Output format.",
+    ),
 ) -> None:
     try:
         app_config = load_config(config)
@@ -48,8 +55,7 @@ def resolve(
         typer.echo(f"Unsupported platform: {exc.args[0]}", err=True)
         raise typer.Exit(code=1) from exc
 
-    if output == "json":
-        typer.echo(json.dumps(result.model_dump(), ensure_ascii=False, indent=2))
+    typer.echo(render_result(result, output))
 
 
 def build_resolver(config: AppConfig) -> AddressToProxyResolver:
@@ -70,6 +76,24 @@ def default_platform(config: AppConfig) -> str:
         if platform_name in supported:
             return platform_name
     raise ConfigError("No supported proxy platform is configured")
+
+
+def render_result(result: ResolveResult, output: Literal["json", "text", "curl"]) -> str:
+    if output == "json":
+        return json.dumps(result.model_dump(), ensure_ascii=False, indent=2)
+    if output == "text":
+        validated = "true" if result.validated else "false"
+        return "\n".join(
+            [
+                f"proxy_host={result.proxy_host}",
+                f"username={result.username}",
+                f"password={result.password}",
+                f"validated={validated}",
+            ]
+        )
+    proxy_host = shlex.quote(result.proxy_host)
+    credentials = shlex.quote(f"{result.username}:{result.password}")
+    return f"curl -x {proxy_host} -U {credentials} https://ipinfo.io/json"
 
 
 def main() -> None:
