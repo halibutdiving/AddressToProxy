@@ -47,6 +47,14 @@ class FakeResolver:
         )
 
 
+class RecordingResolver(FakeResolver):
+    seen_platforms: list[str] = []
+
+    def resolve(self, address: str, platform: str) -> ResolveResult:
+        self.seen_platforms.append(platform)
+        return super().resolve(address, platform)
+
+
 def test_resolve_command_prints_json(monkeypatch, tmp_path):
     config_file = tmp_path / "config.yaml"
     config_file.write_text(
@@ -93,6 +101,86 @@ validation:
     assert payload["parsed_address"]["city"] == "Charlotte"
     assert payload["selected_location"]["state"] == "North Carolina"
     assert payload["validation"]["attempts"] == 1
+
+
+def test_resolve_command_selects_first_supported_configured_platform(monkeypatch, tmp_path):
+    RecordingResolver.seen_platforms = []
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text(
+        """
+llm:
+  base_url: "https://llm.example/v1"
+  api_key: "fake-llm-key"
+  model: "fast-model"
+platforms:
+  unsupported:
+    token: "unused"
+    proxy_host: "unused"
+    account_id: "unused"
+    password: "unused"
+    ttl_minutes: 1
+  1024proxy:
+    token: "fake-platform-token"
+    proxy_host: "us.1024proxy.io:3000"
+    account_id: "acct_example"
+    password: "fake-proxy-password"
+    ttl_minutes: 10
+validation:
+  mode: "strict"
+  max_retries: 5
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cli, "build_resolver", lambda config: RecordingResolver(config))
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "resolve",
+            "123 Example St,Example City,North Carolina,28214, US",
+            "--config",
+            str(config_file),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert RecordingResolver.seen_platforms == ["1024proxy"]
+
+
+def test_resolve_command_errors_when_no_supported_platform_is_configured(tmp_path):
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text(
+        """
+llm:
+  base_url: "https://llm.example/v1"
+  api_key: "fake-llm-key"
+  model: "fast-model"
+platforms:
+  unsupported:
+    token: "unused"
+    proxy_host: "unused"
+    account_id: "unused"
+    password: "unused"
+    ttl_minutes: 1
+validation:
+  mode: "strict"
+  max_retries: 5
+""",
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "resolve",
+            "123 Example St,Example City,North Carolina,28214, US",
+            "--config",
+            str(config_file),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "No supported proxy platform is configured" in result.stderr
 
 
 def test_resolve_command_uses_current_directory_config_by_default(monkeypatch, tmp_path):

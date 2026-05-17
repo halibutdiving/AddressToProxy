@@ -5,7 +5,7 @@ from typing import Literal
 import typer
 
 from address_to_proxy.config import AppConfig, load_config
-from address_to_proxy.errors import AddressToProxyError
+from address_to_proxy.errors import AddressToProxyError, ConfigError
 from address_to_proxy.llm import LlmAddressParser
 from address_to_proxy.platforms.proxy1024 import Proxy1024Adapter
 from address_to_proxy.resolver import AddressToProxyResolver
@@ -28,13 +28,19 @@ def resolve(
         "-c",
         help="Path to YAML config file.",
     ),
-    platform: str = typer.Option("1024proxy", "--platform", "-p", help="Proxy platform name."),
+    platform: str | None = typer.Option(
+        None,
+        "--platform",
+        "-p",
+        help="Proxy platform name. Defaults to the first supported platform in config.",
+    ),
     output: Literal["json"] = typer.Option("json", "--output", "-o", help="Output format."),
 ) -> None:
     try:
         app_config = load_config(config)
         resolver = build_resolver(app_config)
-        result = resolver.resolve(address, platform=platform)
+        selected_platform = platform or default_platform(app_config)
+        result = resolver.resolve(address, platform=selected_platform)
     except AddressToProxyError as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
@@ -47,15 +53,23 @@ def resolve(
 
 
 def build_resolver(config: AppConfig) -> AddressToProxyResolver:
-    adapters = {
-        "1024proxy": Proxy1024Adapter(config.platforms["1024proxy"]),
-    }
+    adapters = {}
+    if "1024proxy" in config.platforms:
+        adapters["1024proxy"] = Proxy1024Adapter(config.platforms["1024proxy"])
     return AddressToProxyResolver(
         parser=LlmAddressParser(config.llm),
         adapters=adapters,
         validator=ProxyValidator(config.validation),
         validation_config=config.validation,
     )
+
+
+def default_platform(config: AppConfig) -> str:
+    supported = {"1024proxy"}
+    for platform_name in config.platforms:
+        if platform_name in supported:
+            return platform_name
+    raise ConfigError("No supported proxy platform is configured")
 
 
 def main() -> None:
