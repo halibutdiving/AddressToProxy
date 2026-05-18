@@ -11,6 +11,23 @@ First version scope:
 - 1024proxy username generation.
 - Configurable proxy location validation through `ipinfo.io/json`.
 
+## Requirements
+
+This tool requires a configured LLM endpoint. It cannot resolve addresses with only
+1024proxy credentials because the first step is LLM-assisted address parsing.
+
+The LLM service must expose an OpenAI-compatible chat completions API:
+
+```text
+POST {llm.base_url}/chat/completions
+```
+
+Set these values in `config.yaml` before running:
+
+- `llm.base_url`: OpenAI-compatible API base URL, for example `https://api.openai.com/v1` or another compatible provider.
+- `llm.model`: the fast model ID to use for address parsing and platform dictionary matching.
+- `llm.api_key`: read from `ADDRESS_TO_PROXY_LLM_API_KEY` in the example config.
+
 ## Usage
 
 Install dependencies:
@@ -32,6 +49,11 @@ export ADDRESS_TO_PROXY_LLM_API_KEY="..."
 export ADDRESS_TO_PROXY_1024_TOKEN="..."
 export ADDRESS_TO_PROXY_1024_PASSWORD="..."
 ```
+
+`ADDRESS_TO_PROXY_LLM_API_KEY` is required. The tool sends the user-provided
+address to the configured LLM to extract country, state, city, postal code, and
+street, then asks the same LLM to choose from platform-supported country/state/city
+candidates when direct matching fails.
 
 Run:
 
@@ -84,7 +106,19 @@ export ADDRESS_TO_PROXY_1024_PASSWORD="..."
 
 The 1024proxy token is used only for platform dictionary API calls. The account ID and password are used only for connecting to the generated proxy.
 
-Address parsing runs through the configured LLM first. If the parsed country or state does not directly match the selected platform dictionary, the tool asks the same LLM to choose from the platform-supported candidates and then validates that choice locally before generating the proxy username.
+Address parsing runs through the configured LLM first. If the parsed country or
+state does not directly match the selected platform dictionary, the tool asks the
+same LLM to choose from the platform-supported candidates and then validates that
+choice locally before generating the proxy username.
+
+Example LLM config:
+
+```yaml
+llm:
+  base_url: "https://api.openai.com/v1"
+  api_key: "${ADDRESS_TO_PROXY_LLM_API_KEY}"
+  model: "gpt-4o-mini"
+```
 
 ## Development
 
@@ -127,7 +161,7 @@ Then edit `config.yaml` for non-secret values such as `llm.base_url`, `llm.model
 ```bash
 export ADDRESS_TO_PROXY_LLM_API_KEY="your-llm-api-key"
 export ADDRESS_TO_PROXY_1024_TOKEN="your-1024proxy-api-token"
-export ADDRESS_TO_PROXY_1024_PASSWORD="your-fake-fake-proxy-password"
+export ADDRESS_TO_PROXY_1024_PASSWORD="your-proxy-password"
 ```
 
 Run a real resolve request:
