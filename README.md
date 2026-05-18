@@ -127,7 +127,7 @@ Then edit `config.yaml` for non-secret values such as `llm.base_url`, `llm.model
 ```bash
 export ADDRESS_TO_PROXY_LLM_API_KEY="your-llm-api-key"
 export ADDRESS_TO_PROXY_1024_TOKEN="your-1024proxy-api-token"
-export ADDRESS_TO_PROXY_1024_PASSWORD="your-fake-proxy-password"
+export ADDRESS_TO_PROXY_1024_PASSWORD="your-fake-fake-proxy-password"
 ```
 
 Run a real resolve request:

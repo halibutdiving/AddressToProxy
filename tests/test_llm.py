@@ -14,7 +14,7 @@ def _parser() -> LlmAddressParser:
     return LlmAddressParser(
         LlmConfig(
             base_url="https://llm.example/v1",
-            api_key="fake-llm-key",
+            api_key="fake-fake-llm-key",
             model="fast-model",
         )
     )
@@ -49,7 +49,7 @@ def test_parse_posts_openai_compatible_request_and_returns_address():
     parsed = _parser().parse("123 Example St,Example City,North Carolina,28214, US")
 
     request = route.calls.last.request
-    assert request.headers["authorization"] == "Bearer fake-llm-key"
+    assert request.headers["authorization"] == "Bearer fake-fake-llm-key"
     body = request.content.decode()
     assert '"model":"fast-model"' in body
     assert "123 Example St" in body

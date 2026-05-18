@@ -14,7 +14,7 @@ from address_to_proxy.resolver import AddressToProxyResolver
 
 class FakeParser:
     def parse(self, address: str) -> ParsedAddress:
-        assert "Charlotte" in address
+        assert "Example City" in address
         return ParsedAddress(
             country="US",
             state="North Carolina",
@@ -92,7 +92,7 @@ class FakePlatformStateParser:
 
 class FakeAdapter:
     proxy_host = "us.1024proxy.io:3000"
-    password = "fake-proxy-password"
+    password = "fake-fake-proxy-password"
 
     def __init__(self) -> None:
         self.generated = 0
@@ -171,7 +171,7 @@ def test_resolver_happy_path_returns_valid_connection_details():
     assert result.platform == "1024proxy"
     assert result.proxy_host == "us.1024proxy.io:3000"
     assert result.username == "user-1-Charlotte"
-    assert result.password == "fake-proxy-password"
+    assert result.password == "fake-fake-proxy-password"
     assert result.validated is True
     assert result.selected_location.city == "Charlotte"
     assert result.selected_location.latitude == 35.2271

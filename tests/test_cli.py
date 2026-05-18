@@ -19,7 +19,7 @@ class FakeResolver:
             platform="1024proxy",
             proxy_host="us.1024proxy.io:3000",
             username="acct_example-region-US-st-North Carolina-city-Charlotte-sid-W4xtvPvQ-t-10",
-            password="fake-proxy-password",
+            password="fake-fake-proxy-password",
             validated=True,
             parsed_address=ParsedAddress(
                 country="US",
@@ -61,14 +61,14 @@ def test_resolve_command_prints_json(monkeypatch, tmp_path):
         """
 llm:
   base_url: "https://llm.example/v1"
-  api_key: "fake-llm-key"
+  api_key: "fake-fake-llm-key"
   model: "fast-model"
 platforms:
   1024proxy:
-    token: "fake-platform-token"
+    token: "fake-fake-platform-token"
     proxy_host: "us.1024proxy.io:3000"
     account_id: "acct_example"
-    password: "fake-proxy-password"
+    password: "fake-fake-proxy-password"
     ttl_minutes: 10
 validation:
   mode: "strict"
@@ -96,7 +96,7 @@ validation:
     payload = json.loads(result.stdout)
     assert payload["proxy_host"] == "us.1024proxy.io:3000"
     assert payload["username"].startswith("acct_example-region-US")
-    assert payload["password"] == "fake-proxy-password"
+    assert payload["password"] == "fake-fake-proxy-password"
     assert payload["validated"] is True
     assert payload["parsed_address"]["city"] == "Charlotte"
     assert payload["selected_location"]["state"] == "North Carolina"
@@ -109,14 +109,14 @@ def test_resolve_command_joins_multiple_address_tokens(monkeypatch, tmp_path):
         """
 llm:
   base_url: "https://llm.example/v1"
-  api_key: "fake-llm-key"
+  api_key: "fake-fake-llm-key"
   model: "fast-model"
 platforms:
   1024proxy:
-    token: "fake-platform-token"
+    token: "fake-fake-platform-token"
     proxy_host: "us.1024proxy.io:3000"
     account_id: "acct_example"
-    password: "fake-proxy-password"
+    password: "fake-fake-proxy-password"
     ttl_minutes: 10
 validation:
   mode: "strict"
@@ -151,14 +151,14 @@ def test_resolve_command_prints_text(monkeypatch, tmp_path):
         """
 llm:
   base_url: "https://llm.example/v1"
-  api_key: "fake-llm-key"
+  api_key: "fake-fake-llm-key"
   model: "fast-model"
 platforms:
   1024proxy:
-    token: "fake-platform-token"
+    token: "fake-fake-platform-token"
     proxy_host: "us.1024proxy.io:3000"
     account_id: "acct_example"
-    password: "fake-proxy-password"
+    password: "fake-fake-proxy-password"
     ttl_minutes: 10
 validation:
   mode: "strict"
@@ -184,7 +184,7 @@ validation:
     assert result.stdout == (
         "proxy_host=us.1024proxy.io:3000\n"
         "username=acct_example-region-US-st-North Carolina-city-Charlotte-sid-W4xtvPvQ-t-10\n"
-        "password=fake-proxy-password\n"
+        "password=fake-fake-proxy-password\n"
         "validated=true\n"
     )
 
@@ -195,14 +195,14 @@ def test_resolve_command_prints_curl(monkeypatch, tmp_path):
         """
 llm:
   base_url: "https://llm.example/v1"
-  api_key: "fake-llm-key"
+  api_key: "fake-fake-llm-key"
   model: "fast-model"
 platforms:
   1024proxy:
-    token: "fake-platform-token"
+    token: "fake-fake-platform-token"
     proxy_host: "us.1024proxy.io:3000"
     account_id: "acct_example"
-    password: "fake-proxy-password"
+    password: "fake-fake-proxy-password"
     ttl_minutes: 10
 validation:
   mode: "strict"
@@ -227,7 +227,7 @@ validation:
     assert result.exit_code == 0
     assert result.stdout == (
         "curl -x us.1024proxy.io:3000 "
-        "-U 'acct_example-region-US-st-North Carolina-city-Charlotte-sid-W4xtvPvQ-t-10:fake-proxy-password' "
+        "-U 'acct_example-region-US-st-North Carolina-city-Charlotte-sid-W4xtvPvQ-t-10:fake-fake-proxy-password' "
         "https://ipinfo.io/json\n"
     )
 
@@ -239,7 +239,7 @@ def test_resolve_command_selects_first_supported_configured_platform(monkeypatch
         """
 llm:
   base_url: "https://llm.example/v1"
-  api_key: "fake-llm-key"
+  api_key: "fake-fake-llm-key"
   model: "fast-model"
 platforms:
   unsupported:
@@ -249,10 +249,10 @@ platforms:
     password: "unused"
     ttl_minutes: 1
   1024proxy:
-    token: "fake-platform-token"
+    token: "fake-fake-platform-token"
     proxy_host: "us.1024proxy.io:3000"
     account_id: "acct_example"
-    password: "fake-proxy-password"
+    password: "fake-fake-proxy-password"
     ttl_minutes: 10
 validation:
   mode: "strict"
@@ -282,7 +282,7 @@ def test_resolve_command_errors_when_no_supported_platform_is_configured(tmp_pat
         """
 llm:
   base_url: "https://llm.example/v1"
-  api_key: "fake-llm-key"
+  api_key: "fake-fake-llm-key"
   model: "fast-model"
 platforms:
   unsupported:
@@ -318,14 +318,14 @@ def test_resolve_command_uses_current_directory_config_by_default(monkeypatch, t
         """
 llm:
   base_url: "https://llm.example/v1"
-  api_key: "fake-llm-key"
+  api_key: "fake-fake-llm-key"
   model: "fast-model"
 platforms:
   1024proxy:
-    token: "fake-platform-token"
+    token: "fake-fake-platform-token"
     proxy_host: "us.1024proxy.io:3000"
     account_id: "acct_example"
-    password: "fake-proxy-password"
+    password: "fake-fake-proxy-password"
     ttl_minutes: 10
 validation:
   mode: "strict"
@@ -372,14 +372,14 @@ def test_llm_non_json_response_exits_non_zero_without_traceback(tmp_path):
         """
 llm:
   base_url: "https://llm.example/v1"
-  api_key: "fake-llm-key"
+  api_key: "fake-fake-llm-key"
   model: "fast-model"
 platforms:
   1024proxy:
-    token: "fake-platform-token"
+    token: "fake-fake-platform-token"
     proxy_host: "us.1024proxy.io:3000"
     account_id: "acct_example"
-    password: "fake-proxy-password"
+    password: "fake-fake-proxy-password"
     ttl_minutes: 10
 validation:
   mode: "off"

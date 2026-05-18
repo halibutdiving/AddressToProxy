@@ -147,9 +147,9 @@ Create tests that verify:
 
 ```python
 def test_load_config_expands_environment_variables(tmp_path, monkeypatch):
-    monkeypatch.setenv("ADDRESS_TO_PROXY_LLM_API_KEY", "fake-llm-key")
-    monkeypatch.setenv("ADDRESS_TO_PROXY_1024_TOKEN", "fake-platform-token")
-    monkeypatch.setenv("ADDRESS_TO_PROXY_1024_PASSWORD", "fake-proxy-password")
+    monkeypatch.setenv("ADDRESS_TO_PROXY_LLM_API_KEY", "fake-fake-llm-key")
+    monkeypatch.setenv("ADDRESS_TO_PROXY_1024_TOKEN", "fake-fake-platform-token")
+    monkeypatch.setenv("ADDRESS_TO_PROXY_1024_PASSWORD", "fake-fake-proxy-password")
     config_file = tmp_path / "config.yaml"
     config_file.write_text(
         """
@@ -174,9 +174,9 @@ validation:
 
     config = load_config(config_file)
 
-    assert config.llm.api_key == "fake-llm-key"
-    assert config.platforms["1024proxy"].token == "fake-platform-token"
-    assert config.platforms["1024proxy"].password == "fake-proxy-password"
+    assert config.llm.api_key == "fake-fake-llm-key"
+    assert config.platforms["1024proxy"].token == "fake-fake-platform-token"
+    assert config.platforms["1024proxy"].password == "fake-fake-proxy-password"
     assert config.validation.mode == "strict"
 ```
 

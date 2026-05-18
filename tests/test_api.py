@@ -12,8 +12,8 @@ class FakeResolver:
         return ResolveResult(
             platform="1024proxy",
             proxy_host="us.1024proxy.io:3000",
-            username="fake-generated-user",
-            password="fake-proxy-password",
+            username="fake-fake-generated-user",
+            password="fake-fake-proxy-password",
             validated=True,
             parsed_address=ParsedAddress(
                 country="US",

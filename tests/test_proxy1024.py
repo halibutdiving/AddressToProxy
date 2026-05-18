@@ -10,10 +10,10 @@ from address_to_proxy.platforms.proxy1024 import Proxy1024Adapter, generate_sid
 
 def _config() -> Proxy1024Config:
     return Proxy1024Config(
-        token="fake-platform-token",
+        token="fake-fake-platform-token",
         proxy_host="us.1024proxy.io:3000",
         account_id="acct_example",
-        password="fake-proxy-password",
+        password="fake-fake-proxy-password",
         ttl_minutes=10,
     )
 
@@ -40,7 +40,7 @@ def test_fetch_countries_posts_expected_form_and_normalizes_states():
 
     request = route.calls.last.request
     assert request.headers["content-type"] == "application/x-www-form-urlencoded;charset=UTF-8"
-    assert request.content == b"cate=traffic&lang=zh&token=fake-platform-token"
+    assert request.content == b"cate=traffic&lang=zh&token=fake-fake-platform-token"
     assert countries == [
         Country(
             code="US",
@@ -117,7 +117,7 @@ def test_fetch_cities_posts_expected_form_and_normalizes_city_names():
     cities = Proxy1024Adapter(_config()).fetch_cities("US", "California")
 
     request = route.calls.last.request
-    assert request.content == b"country=US&state=California&lang=zh&token=fake-platform-token"
+    assert request.content == b"country=US&state=California&lang=zh&token=fake-fake-platform-token"
     assert cities == [
         City(name="Los Angeles"),
         City(name="San Francisco", latitude=37.7749, longitude=-122.4194),
